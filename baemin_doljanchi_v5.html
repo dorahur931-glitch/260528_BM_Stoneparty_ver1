@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>다시하는 돌잡이 - 배달의민족</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;background:#CBCBCB;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans KR',sans-serif;}
+
+#shell{position:relative;width:390px;height:844px;background:#F8F8F8;border-radius:44px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.4);border:1px solid #BBB;transform-origin:center center;}
+
+#appBg{position:absolute;inset:0;display:flex;flex-direction:column;background:#F5F5F5;border-radius:44px;overflow:hidden;}
+
+.statusBar{height:48px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0;border-radius:44px 44px 0 0;}
+.statusTime{font-size:15px;font-weight:700;color:#111;}
+.statusLoc{font-size:13px;font-weight:700;color:#111;display:flex;align-items:center;gap:3px;}
+.statusIcons{display:flex;align-items:center;gap:12px;font-size:15px;color:#555;}
+
+.searchWrap{background:#fff;padding:8px 16px 10px;flex-shrink:0;}
+.searchBar{background:#F2F2F2;border-radius:22px;height:42px;display:flex;align-items:center;padding:0 16px;gap:8px;font-size:13px;color:#999;}
+.searchBar span{flex:1;}
+
+.promoBanner{margin:0 16px 10px;background:linear-gradient(135deg,#0EEED3 0%,#00C8B4 100%);border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.promoLeft .pt{font-size:11px;color:rgba(0,60,50,0.7);margin-bottom:4px;font-weight:600;}
+.promoLeft .pb{font-size:16px;font-weight:900;color:#003D38;line-height:1.35;}
+.promoLeft .ps{margin-top:6px;}
+.promoLeft .psBtn{display:inline-block;background:#003D38;color:#0EEED3;font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;cursor:pointer;}
+.promoRight{background:#5B2D8E;border-radius:10px;padding:10px 12px;text-align:center;color:#FFD600;font-weight:900;font-size:11px;min-width:52px;}
+.promoRight .pra{font-size:20px;font-weight:900;color:#FFD600;line-height:1;}
+
+.appTabs{display:flex;background:#fff;border-bottom:2px solid #F0F0F0;flex-shrink:0;}
+.tabItem{flex:1;padding:10px 0;font-size:10px;color:#999;font-weight:500;text-align:center;position:relative;white-space:nowrap;}
+.tabItem.on{color:#111;font-weight:900;}
+.tabItem.on::after{content:'';position:absolute;bottom:-2px;left:10%;right:10%;height:2.5px;background:#111;border-radius:1px;}
+
+.catsWrap{background:#fff;padding:8px 4px 6px;flex-shrink:0;}
+.catsGrid{display:grid;grid-template-columns:repeat(5,1fr);}
+.catItem{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 2px;cursor:pointer;}
+.catCircle{width:48px;height:48px;border-radius:14px;background:#F5F5F5;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.catCircle.highlight{background:linear-gradient(135deg,#0EEED3,#00BFA5);}
+.catLabel{font-size:9.5px;color:#555;text-align:center;line-height:1.3;}
+
+.storeRow{background:#fff;border-top:6px solid #F2F2F2;padding:10px 14px 8px;flex-shrink:0;}
+.storeRowInner{display:flex;gap:10px;overflow-x:auto;}
+.storeRowInner::-webkit-scrollbar{display:none;}
+.storePill{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.storeCircle{width:52px;height:52px;border-radius:50%;border:1.5px solid #EEE;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;position:relative;overflow:visible;}
+.freeTag{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#0EEED3;color:#003D38;font-size:6px;font-weight:700;padding:2px 5px;border-radius:4px;white-space:nowrap;}
+.storeLabel{font-size:9px;color:#555;text-align:center;font-weight:600;}
+
+.eventCard{margin:8px 14px;background:#fff;border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;box-shadow:0 2px 10px rgba(0,0,0,0.07);flex-shrink:0;cursor:pointer;border:1.5px solid #F0F0F0;}
+.eventTop{display:flex;justify-content:space-between;align-items:center;}
+.eventTitle{font-size:16px;font-weight:900;color:#111;}
+.eventBadge{background:#FF3D5A;color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:10px;}
+.eventDesc{font-size:12px;color:#666;line-height:1.6;}
+
+.couponToastBar{margin:0 14px;background:#fff;border:2px solid #FF3D5A;border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.ctLeft{font-size:13px;font-weight:700;color:#FF3D5A;}
+.ctRight{display:flex;align-items:center;gap:4px;}
+.ctDigit{background:#1A1A1A;color:#fff;font-size:13px;font-weight:900;padding:4px 7px;border-radius:6px;min-width:26px;text-align:center;}
+.ctColon{font-size:13px;font-weight:900;color:#1A1A1A;}
+.ctX{font-size:16px;color:#CCC;margin-left:6px;cursor:pointer;}
+
+.bottomNav{height:68px;background:#fff;border-top:1px solid #EEE;display:flex;align-items:center;flex-shrink:0;border-radius:0 0 44px 44px;padding-bottom:6px;}
+.navI{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.navI .ni{font-size:20px;}
+.navI .nl{font-size:9px;color:#999;}
+.navI.on .nl{color:#111;font-weight:700;}
+.navMid{width:50px;height:50px;border-radius:50%;background:#F5F5F5;border:2px solid #EEE;display:flex;align-items:center;justify-content:center;font-size:22px;flex:0 0 50px;margin-top:-12px;}
+
+#dim{position:absolute;inset:0;background:rgba(0,0,0,0);z-index:19;pointer-events:none;border-radius:44px;transition:background .35s ease;}
+#dim.on{background:rgba(0,0,0,0.50);pointer-events:all;}
+
+/* ══ INTRO MODAL ══ */
+#introModal{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%) scale(0.85);
+  width:320px;background:#fff;border-radius:24px;
+  padding:36px 28px 28px;z-index:30;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  opacity:0;pointer-events:none;
+  transition:opacity .35s ease, transform .35s cubic-bezier(0.34,1.46,0.64,1);
+}
+#introModal.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:all;}
+.modalClose{position:absolute;top:14px;right:16px;width:30px;height:30px;border-radius:50%;background:#F0F0F0;border:none;cursor:pointer;font-size:15px;color:#888;display:flex;align-items:center;justify-content:center;}
+.modalEmoji{font-size:54px;margin-bottom:10px;line-height:1;}
+.modalTitle{font-size:27px;font-weight:900;color:#111;line-height:1.25;margin-bottom:8px;}
+.modalSub{font-size:15px;color:#444;line-height:1.6;margin-bottom:4px;}
+.modalCoupon{font-size:13px;color:#AAAAAA;margin-bottom:22px;}
+/* ★ 1. 인트로 모달 버튼 키컬러 */
+.modalBtn{width:100%;padding:16px;background:#0EEED3;color:#003D38;border:none;border-radius:14px;font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:900;cursor:pointer;}
+.modalBtn:active{opacity:.85;}
+
+/* ══ FULL-SCREEN EVENT PAGE ══ */
+#popup{
+  position:absolute;left:0;right:0;top:0;height:100%;
+  background:#fff;
+  display:flex;flex-direction:column;
+  z-index:25;
+  transform:translateY(100%);
+  transition:transform .45s cubic-bezier(0.32,0.72,0,1);
+  overflow:hidden;
+}
+#popup.show{transform:translateY(0);}
+
+/* ★ 1. 이벤트 페이지 헤더 키컬러 */
+.eventPageHeader{
+  background:#0EEED3;
+  height:52px;
+  display:flex;align-items:center;
+  padding:0 16px;
+  flex-shrink:0;
+}
+.epBackBtn{width:36px;height:36px;border:none;background:none;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#003D38;}
+.epTitle{flex:1;text-align:center;font-size:15px;font-weight:900;color:#003D38;margin-right:36px;}
+
+#screenWrap{flex:1;position:relative;overflow:hidden;}
+.screen{position:absolute;inset:0;overflow-y:auto;display:none;flex-direction:column;align-items:center;}
+.screen.active{display:flex;}
+
+/* ── DOLSANG ── */
+#scrDolsang{background:linear-gradient(180deg,#E8FBF8 0%,#FFFDF4 60%);}
+.dolHeader{width:100%;text-align:center;padding:18px 0 8px;}
+/* ★ 1. 뱃지 키컬러 */
+.dolBadge{display:inline-block;background:#0EEED3;color:#003D38;font-size:10px;font-weight:700;padding:4px 14px;border-radius:20px;margin-bottom:10px;}
+.dolTitle{font-size:22px;font-weight:900;color:#111;line-height:1.35;margin-bottom:6px;}
+.dolSub{font-size:12px;color:#666;line-height:1.7;padding:0 16px;}
+
+/* ★ 1. 돌상 테이블 테두리 키컬러 */
+.dolsangTable{width:340px;background:linear-gradient(135deg,#E8FBF8,#C8F5EE);border-radius:20px;border:3px solid #0EEED3;padding:24px 10px 18px;margin:14px 0 10px;position:relative;flex-shrink:0;}
+.dolsangLabel{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#0EEED3;color:#003D38;font-size:10px;font-weight:900;padding:4px 18px;border-radius:20px;white-space:nowrap;}
+
+/* ★ 2. 음식 배열: 윗줄 2개 + 아랫줄 3개 */
+.foodsGrid{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.foodsRow{display:flex;justify-content:center;gap:12px;}
+.foodCard{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;width:88px;}
+/* ★ 1. 음식 카드 테두리 키컬러 */
+.foodEmoji{width:76px;height:76px;border-radius:16px;background:#fff;border:2.5px solid #0EEED3;display:flex;align-items:center;justify-content:center;font-size:36px;box-shadow:0 4px 12px rgba(14,238,211,0.2);animation:floatFood 2.6s ease-in-out infinite;}
+.foodCard:nth-child(2) .foodEmoji{animation-delay:.35s;}
+.foodsRow:nth-child(2) .foodCard:nth-child(1) .foodEmoji{animation-delay:.7s;}
+.foodsRow:nth-child(2) .foodCard:nth-child(2) .foodEmoji{animation-delay:1.05s;}
+.foodsRow:nth-child(2) .foodCard:nth-child(3) .foodEmoji{animation-delay:1.4s;}
+@keyframes floatFood{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.foodName{font-size:11px;font-weight:700;color:#555;}
+.dolHint{font-size:12px;color:#999;text-align:center;margin-bottom:16px;}
+
+/* ── RESULT ── */
+#scrResult{background:#F8FFFE;}
+/* ★ 1. 결과 상단 키컬러 그라디언트 */
+.resultTop{width:100%;background:linear-gradient(135deg,#0EEED3,#00BFA5);padding:22px 20px 26px;text-align:center;flex-shrink:0;}
+.resultYear{font-size:10px;color:rgba(0,60,50,0.7);font-weight:700;margin-bottom:6px;letter-spacing:1px;}
+.resultEmoji{font-size:52px;margin-bottom:6px;line-height:1;}
+.resultKeyword{display:inline-block;background:rgba(255,255,255,0.28);color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;margin-bottom:8px;}
+.resultTitle{font-size:21px;font-weight:900;color:#fff;line-height:1.3;margin-bottom:6px;}
+.resultHashtags{font-size:11px;color:rgba(255,255,255,0.82);line-height:2.1;}
+.resultCard{background:#fff;border-radius:16px;border:1.5px solid #EBEBEB;padding:18px;width:calc(100% - 32px);margin:14px 16px 6px;box-shadow:0 2px 12px rgba(0,0,0,0.05);}
+.rcLabel{font-size:9px;color:#0EEED3;font-weight:700;margin-bottom:8px;letter-spacing:.8px;text-align:center;}
+.rcText{font-size:13.5px;color:#333;line-height:2;text-align:center;white-space:pre-line;}
+.campaignSection{width:calc(100% - 32px);margin:4px 16px 10px;background:linear-gradient(180deg,#E8FBF8,#D0F5EE);border-radius:16px;border:1.5px solid #0EEED3;padding:20px 18px;}
+.campBridge{font-size:15px;font-weight:900;color:#003D38;line-height:1.6;margin-bottom:12px;text-align:center;white-space:pre-line;}
+/* ★ 3. campBody 가운데 정렬 */
+.campBody{font-size:12.5px;color:#444;line-height:2.1;margin-bottom:14px;white-space:pre-line;text-align:center;}
+/* ★ 1, 4. campHighlight → 버튼으로 변경, 키컬러 */
+.campHighlightBtn{
+  width:100%;background:#0EEED3;color:#003D38;
+  border:none;border-radius:14px;
+  padding:16px;
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:14px;font-weight:900;
+  cursor:pointer;
+  line-height:1.6;text-align:center;
+  box-shadow:0 4px 14px rgba(14,238,211,0.3);
+  transition:transform .1s;
+}
+.campHighlightBtn:active{transform:scale(0.97);}
+
+.resultBtns{display:flex;flex-direction:column;gap:8px;width:calc(100% - 32px);margin:0 16px 28px;}
+
+/* ── ★ 4. 방명록 화면 (SCR GUESTBOOK) ── */
+#scrGuestbook{background:#F8FFFE;}
+.gbHeader{width:100%;background:linear-gradient(135deg,#0EEED3,#00BFA5);padding:22px 20px 18px;text-align:center;flex-shrink:0;}
+.gbHeaderTitle{font-size:18px;font-weight:900;color:#fff;margin-bottom:4px;}
+.gbHeaderSub{font-size:12px;color:rgba(255,255,255,0.85);line-height:1.7;}
+
+.gbWriteSection{width:calc(100% - 32px);margin:14px 16px 8px;background:#fff;border-radius:16px;border:1.5px solid #E0E0E0;padding:18px;}
+.gbWriteTitle{font-size:14px;font-weight:900;color:#111;margin-bottom:6px;}
+.gbWriteSub{font-size:11px;color:#888;margin-bottom:12px;line-height:1.6;}
+.guestInput{width:100%;min-height:78px;border:2px solid #E0E0E0;border-radius:10px;padding:11px 13px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:#333;resize:none;outline:none;margin-bottom:4px;transition:border-color .2s;}
+.guestInput:focus{border-color:#0EEED3;}
+.guestCount{font-size:11px;color:#BBB;text-align:right;margin-bottom:10px;}
+
+/* 커뮤니티 메시지 피드 */
+.communitySection{width:calc(100% - 32px);margin:0 16px 16px;}
+.communityLabel{font-size:12px;font-weight:700;color:#0EEED3;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.communityLabel::after{content:'';flex:1;height:1px;background:#D0F5EE;}
+.msgFeedWrap{height:200px;overflow:hidden;position:relative;border-radius:14px;}
+.msgFeedWrap::after{content:'';position:absolute;bottom:0;left:0;right:0;height:50px;background:linear-gradient(transparent,#F8FFFE);pointer-events:none;}
+.msgFeed{display:flex;flex-direction:column;gap:8px;animation:feedScroll 18s linear infinite;}
+@keyframes feedScroll{0%{transform:translateY(0)}100%{transform:translateY(-50%)}}
+.msgFeed:hover{animation-play-state:paused;}
+.msgBubble{background:#fff;border-radius:12px;border:1.5px solid #E8F9F6;padding:10px 13px;flex-shrink:0;}
+.msgBubbleTop{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.msgAvatar{width:22px;height:22px;border-radius:50%;background:#0EEED3;display:flex;align-items:center;justify-content:center;font-size:11px;}
+.msgNick{font-size:11px;font-weight:700;color:#333;}
+.msgTime{font-size:9px;color:#BBB;margin-left:auto;}
+.msgText{font-size:12px;color:#555;line-height:1.6;}
+
+/* ── COUPON ── */
+#scrCoupon{background:#F8FFFE;padding:30px 24px 36px;}
+.couponIcon{font-size:56px;margin-bottom:10px;text-align:center;width:100%;}
+.couponTitle{font-size:24px;font-weight:900;color:#111;margin-bottom:6px;text-align:center;}
+.couponSub{font-size:13px;color:#666;line-height:1.85;margin-bottom:16px;text-align:center;}
+.couponCard{background:linear-gradient(135deg,#FFD600,#FFBE00);border-radius:16px;padding:18px 20px;width:100%;margin-bottom:14px;box-shadow:0 4px 18px rgba(255,214,0,0.36);text-align:center;}
+.couponCode{font-size:26px;font-weight:900;color:#111;letter-spacing:3px;margin-bottom:6px;}
+.couponDesc{font-size:11px;color:#8B6914;font-weight:700;}
+.donateNote{background:#E8FBF8;border:1.5px solid #0EEED3;border-radius:10px;padding:13px 14px;width:100%;font-size:12px;color:#005C55;line-height:2;margin-bottom:16px;text-align:center;}
+
+/* BUTTONS */
+.bigBtn{width:100%;padding:15px;background:#0EEED3;color:#003D38;border:none;border-radius:14px;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(14,238,211,0.28);transition:transform .1s;}
+.bigBtn:active{transform:scale(0.97);}
+.bigBtn.yellow{background:#FFD600;color:#111;box-shadow:0 4px 14px rgba(255,214,0,0.28);}
+.bigBtn.ghost{background:#EFEFEF;color:#666;box-shadow:none;}
+
+#toast{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(10,10,10,0.84);color:#fff;font-size:13px;font-weight:700;padding:10px 18px;border-radius:24px;white-space:nowrap;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;}
+#toast.show{opacity:1;}
+
+@keyframes selectPop{0%{transform:scale(1)}40%{transform:scale(1.3)}70%{transform:scale(0.93)}100%{transform:scale(1)}}
+.foodEmoji.pop{animation:selectPop .38s ease forwards!important;}
+@keyframes confettiFall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(340px) rotate(540deg);opacity:0}}
+</style>
+</head>
+<body>
+<div id="shell">
+
+<div id="appBg">
+  <div class="statusBar">
+    <span class="statusTime">17:28</span>
+    <div class="statusLoc">대흥동 22-60 <span style="font-size:10px;">▼</span></div>
+    <div class="statusIcons">
+      <span style="font-size:18px;color:#0EEED3;">🏷️</span>
+      <span>🔔</span><span>🛒</span>
+    </div>
+  </div>
+  <div class="searchWrap">
+    <div class="searchBar">
+      <span>돈까스 나와라 뚝딱!!</span>
+      <span style="margin-left:auto;font-size:17px;">🔍</span>
+    </div>
+  </div>
+  <div class="promoBanner">
+    <div class="promoLeft">
+      <div class="pt">지금 바로 확인하세요</div>
+      <div class="pb">무료체험부터 1만원 쿠폰까지<br>특별 한정, 역대급 혜택!</div>
+      <div class="ps"><span class="psBtn">사라지기 전에 혜택받기 ›</span></div>
+    </div>
+    <div class="promoRight"><div style="font-size:9px;margin-bottom:2px;">최대</div><div class="pra">1만원</div></div>
+  </div>
+  <div class="appTabs">
+    <div class="tabItem on">음식배달</div>
+    <div class="tabItem">픽업</div>
+    <div class="tabItem" style="font-size:9px;">장보기·쇼핑</div>
+    <div class="tabItem">선물하기</div>
+    <div class="tabItem" style="font-size:9px;">혜택모아보기</div>
+  </div>
+  <div class="catsWrap">
+    <div class="catsGrid">
+      <div class="catItem" onclick="showIntroModal()">
+        <div class="catCircle highlight" style="font-size:13px;font-weight:900;color:#003D38;flex-direction:column;gap:1px;">
+          <span style="font-size:9px;font-weight:700;">최대1만원</span>
+          <span style="font-size:14px;font-weight:900;">매일</span>
+          <span style="font-size:11px;font-weight:900;">할인중</span>
+        </div>
+        <div class="catLabel">배짱할인</div>
+      </div>
+      <div class="catItem"><div class="catCircle">☕</div><div class="catLabel">카페·디저트</div></div>
+      <div class="catItem"><div class="catCircle">🍗</div><div class="catLabel">치킨</div></div>
+      <div class="catItem"><div class="catCircle">🍔</div><div class="catLabel">패스트푸드</div></div>
+      <div class="catItem"><div class="catCircle">🌭</div><div class="catLabel">분식</div></div>
+      <div class="catItem"><div class="catCircle">🍱</div><div class="catLabel">한식</div></div>
+      <div class="catItem"><div class="catCircle">🥟</div><div class="catLabel">중식</div></div>
+      <div class="catItem"><div class="catCircle">🍜</div><div class="catLabel">한그릇</div></div>
+      <div class="catItem"><div class="catCircle">📍</div><div class="catLabel">픽업이벤트</div></div>
+      <div class="catItem"><div class="catCircle">🤝</div><div class="catLabel">만나서결제</div></div>
+    </div>
+  </div>
+  <div class="storeRow">
+    <div class="storeRowInner">
+      <div class="storePill"><div class="storeCircle" style="background:#362F7A;color:#fff;font-size:10px;"><div class="freeTag">무료배달</div>B마트</div><div class="storeLabel">B마트</div></div>
+      <div class="storePill"><div class="storeCircle" style="background:#6B2D8B;color:#fff;font-size:13px;font-weight:900;"><div class="freeTag">무료배달</div>CU</div><div class="storeLabel">CU</div></div>
+      <div class="storePill"><div class="storeCircle" style="background:#F05014;color:#fff;font-size:9px;font-weight:700;"><div class="freeTag">최대10%</div>emart</div><div class="storeLabel">이마트</div></div>
+      <div class="storePill"><div class="storeCircle" style="background:#006633;color:#fff;font-size:8px;font-weight:900;text-align:center;line-height:1.3;"><div class="freeTag">무료배달</div>GS<br>더프레시</div><div class="storeLabel">GS더프레시</div></div>
+      <div class="storePill"><div class="storeCircle" style="background:#F05014;color:#fff;font-size:8px;font-weight:700;text-align:center;line-height:1.3;"><div class="freeTag">무료배달</div>emart<br>슈퍼</div><div class="storeLabel">이마트슈퍼</div></div>
+      <div class="storePill"><div class="storeCircle" style="background:#006633;color:#fff;font-size:12px;font-weight:900;">GS25</div><div class="storeLabel">GS25</div></div>
+    </div>
+  </div>
+  <div class="eventCard" onclick="showIntroModal()">
+    <div class="eventTop">
+      <div class="eventTitle">🍼 다시하는 돌잡이</div>
+      <div class="eventBadge">이벤트</div>
+    </div>
+    <div class="eventDesc">내 먹잡이 운명은? 쿠폰 지금 바로 받기!</div>
+  </div>
+  <div class="couponToastBar">
+    <div class="ctLeft">5,000원 할인! 15분 뒤 사라져요</div>
+    <div class="ctRight">
+      <span class="ctDigit" id="t1">1</span><span class="ctDigit" id="t2">3</span>
+      <span class="ctColon">:</span>
+      <span class="ctDigit" id="t3">5</span><span class="ctDigit" id="t4">6</span>
+      <span class="ctX">✕</span>
+    </div>
+  </div>
+  <div class="bottomNav">
+    <div class="navI on"><span class="ni">🏠</span><span class="nl">홈</span></div>
+    <div class="navI"><span class="ni">🛍️</span><span class="nl" style="font-size:8px">장보기·쇼핑</span></div>
+    <div class="navMid">🤍</div>
+    <div class="navI"><span class="ni">📋</span><span class="nl">주문내역</span></div>
+    <div class="navI"><span class="ni">👤</span><span class="nl">마이배민</span></div>
+  </div>
+</div>
+
+<div id="dim" onclick="handleDimClick()"></div>
+
+<div id="introModal">
+  <button class="modalClose" onclick="closeIntroModal()">✕</button>
+  <div class="modalEmoji">🍼</div>
+  <div class="modalTitle">다시하는<br>돌잡이</div>
+  <div class="modalSub">내 올해 먹잡이 운명은?</div>
+  <div class="modalCoupon">쿠폰 지금 바로 증정!</div>
+  <button class="modalBtn" onclick="openDolsang()">이벤트 참여하기</button>
+</div>
+
+<!-- ══ FULL-SCREEN EVENT PAGE ══ -->
+<div id="popup">
+  <div class="eventPageHeader">
+    <button class="epBackBtn" onclick="goHome()">←</button>
+    <div class="epTitle">🍼 다시하는 돌잡이</div>
+  </div>
+  <div id="toast"></div>
+  <div id="screenWrap">
+
+    <!-- SCR 1: 돌상 -->
+    <div class="screen active" id="scrDolsang">
+      <div class="dolHeader">
+        <div class="dolBadge">🎉 2026 다시하는 돌잡이</div>
+        <div class="dolTitle">내 올해 먹잡이 운명은?</div>
+        <div class="dolSub">원하는 음식을 클릭해보세요!<br>남은 올해의 운명이 펼쳐집니다!</div>
+      </div>
+      <div class="dolsangTable">
+        <div class="dolsangLabel">✨ 나의 돌잔치상 ✨</div>
+        <!-- ★ 2. 윗줄 2개 + 아랫줄 3개 배열 -->
+        <div class="foodsGrid">
+          <div class="foodsRow">
+            <div class="foodCard" onclick="selectFood(this,'noodle')"><div class="foodEmoji">🍜</div><div class="foodName">잔치국수</div></div>
+            <div class="foodCard" onclick="selectFood(this,'chicken')"><div class="foodEmoji">🍗</div><div class="foodName">치킨</div></div>
+          </div>
+          <div class="foodsRow">
+            <div class="foodCard" onclick="selectFood(this,'salad')"><div class="foodEmoji">🥗</div><div class="foodName">샐러드</div></div>
+            <div class="foodCard" onclick="selectFood(this,'pizza')"><div class="foodEmoji">🍕</div><div class="foodName">피자</div></div>
+            <div class="foodCard" onclick="selectFood(this,'bibimbap')"><div class="foodEmoji">🥙</div><div class="foodName">비빔밥</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="dolHint">✋ 신중하게 하나만 골라보세요!</div>
+    </div>
+
+    <!-- SCR 2: 결과 -->
+    <div class="screen" id="scrResult">
+      <div class="resultTop">
+        <div class="resultYear">2026 나의 올해 먹잡이 운명</div>
+        <div class="resultEmoji" id="resultEmoji">🍜</div>
+        <div class="resultKeyword" id="resultKeyword"># 끈기</div>
+        <div class="resultTitle" id="resultTitle">면치기는 끝까지</div>
+        <div class="resultHashtags" id="resultHashtags"></div>
+      </div>
+      <div class="resultCard">
+        <div class="rcLabel">✦ 남은 올해 당신이 이루게 될 한 가지 ✦</div>
+        <div class="rcText" id="resultDesc"></div>
+      </div>
+      <div class="campaignSection">
+        <div class="campBridge" id="campBridge"></div>
+        <!-- ★ 3. campBody 가운데 정렬 (CSS로 적용) -->
+        <div class="campBody">아이가 태어나자마자 가장이 되어,
+지치지 않도록 챙겨야 하는 건강과
+없는 시간도 잘 활용해서 사용할 계획.
+
+처음엔 둘로 시작했지만
+마침내 우리 사회의 사랑을 받고
+모두와 하나가 될 그들.
+
+배민은 출산 후 1년 동안,
+미혼 한부모 가정의 한 끼를 함께 배달하고 있습니다.</div>
+        <!-- ★ 4. 방명록 이동 버튼 -->
+        <button class="campHighlightBtn" onclick="goScreen('scrGuestbook')">
+          🍼 배달의민족과 양육자의 용기와 사랑 응원하기!
+        </button>
+      </div>
+      <div class="resultBtns">
+        <button class="bigBtn ghost" id="retryBtn" onclick="retrySelect()">🔄 다시 뽑기</button>
+        <button class="bigBtn yellow" onclick="goHome()">🏠 처음으로 돌아가기</button>
+      </div>
+    </div>
+
+    <!-- ★ 4. SCR GUESTBOOK: 방명록 분리 화면 -->
+    <div class="screen" id="scrGuestbook">
+      <div class="gbHeader">
+        <div class="gbHeaderTitle">🎊 돌잔치 방명록 남기기</div>
+        <div class="gbHeaderSub">곧 첫 돌을 맞이할 아이와 양육자에게<br>축하 한마디를 남겨주세요!<br>당신의 한 마디는 실제 미혼 한부모 가정에 전달됩니다.</div>
+      </div>
+      <div class="gbWriteSection">
+        <div class="gbWriteTitle">✍️ 메시지 작성</div>
+        <div class="gbWriteSub">따뜻한 응원 한 마디가 큰 힘이 됩니다</div>
+        <textarea class="guestInput" id="guestMsg" placeholder="축하 메시지를 입력해주세요 (최소 10자)" maxlength="100" oninput="updateCount()"></textarea>
+        <div class="guestCount"><span id="msgCount">0</span>/100</div>
+        <button class="bigBtn" onclick="submitGuestbook()">🎁 방명록 남기고 쿠폰 받기</button>
+      </div>
+      <!-- 커뮤니티 자동 스크롤 피드 -->
+      <div class="communitySection">
+        <div class="communityLabel">💚 다른 분들의 응원 메시지</div>
+        <div class="msgFeedWrap">
+          <div class="msgFeed" id="msgFeed"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCR 3: 쿠폰 -->
+    <div class="screen" id="scrCoupon">
+      <div class="couponIcon">🎉</div>
+      <div class="couponTitle">쿠폰 발급 완료!</div>
+      <div class="couponSub">방명록을 남겨주셔서 감사합니다.<br>소중한 축하 메시지가 전달될 거예요 💛</div>
+      <div class="couponCard">
+        <div style="font-size:11px;font-weight:700;color:#8B6914;margin-bottom:6px;">📦 배달의민족 쿠폰</div>
+        <div class="couponCode">STONEPARY2026</div>
+        <div class="couponDesc">최소 주문금액 12,000원 · 발급 후 7일 유효</div>
+      </div>
+      <div class="donateNote">🍼 이 쿠폰으로 주문하시면<br>미혼 한부모 가정의 한 끼 식사 지원 기금이 적립됩니다.<br><span style="font-size:11px;color:#007A70">#세상모든것이식지않도록 #함께하는배민</span></div>
+      <button class="bigBtn" onclick="goOrder()" style="width:calc(100% - 32px);margin:0 16px 10px;">지금 주문하러 가기 →</button>
+      <button class="bigBtn ghost" style="width:calc(100% - 32px);margin:0 16px 28px;font-size:14px;" onclick="goHome()">처음으로 돌아가기</button>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+var FOOD = {
+  noodle:{
+    emoji:'🍜',keyword:'끈기',title:'면치기는 끝까지',
+    hashtags:'#꾸준한  #끝까지가는  #느려도가는<br>#포기안하는  #버티기의달인',
+    desc:'올해 당신은 끝까지 해냅니다.\n긴 면발처럼, 어떤 순간도 끊어지지 않는\n당신의 단단함이 빛을 발하는 한 해입니다.',
+    bridge:'이 모든 소망을 이루고자\n꾸준히 노력하는 사람들이 있어요.'
+  },
+  chicken:{
+    emoji:'🍗',keyword:'인기',title:'오늘 같이 치콜 고??',
+    hashtags:'#인싸력상승  #희애재질  #같이있고싶은<br>#약속많은  #인기폭주',
+    desc:'올해 당신의 주변은 당신으로 가득 찹니다.\n치킨처럼, 모두가 원하고 곁에 두고 싶은\n올해의 최애 존재가 되는 한 해입니다.',
+    bridge:'이 넘치는 에너지처럼,\n두 배의 사랑으로 살아가는 사람들이 있어요.'
+  },
+  salad:{
+    emoji:'🥗',keyword:'건강',title:'내 몸엔 초록이 필요해',
+    hashtags:'#갓생도전증  #루틴중독  #자기관리형<br>#멀티비타민재질  #나를챙기는',
+    desc:'올해 당신의 몸과 마음이 빛납니다.\n신선하고 건강하게, 나를 가장 잘 챙기는\n갓생의 주인공이 되는 한 해입니다.',
+    bridge:'이 건강한 운명처럼,\n매일 더 강해지고 있는 사람들이 있어요.'
+  },
+  pizza:{
+    emoji:'🍕',keyword:'조화',title:'비비면 무조건 맛있어',
+    hashtags:'#이것저것  #취향부자  #N잡채질<br>#케미좋은  #균형찾는',
+    desc:'올해 당신의 관계는 풍요롭습니다.\n여럿이 나눌수록 더 맛있어지는 것처럼,\n함께하는 시간이 가장 큰 행복이 됩니다.',
+    bridge:'이 조화로운 운명처럼,\n혼자이지만 더 강한 사랑으로 살아가는 사람들이 있어요.'
+  },
+  bibimbap:{
+    emoji:'🥙',keyword:'계획',title:'피자를 자르는 99가지 방법',
+    hashtags:'#계획형인간  #큰그림보는  #PIZZA아니고PIJJA<br>#야망있는  #플랜짜는',
+    desc:'올해 당신은 모든 것을 제자리에 놓습니다.\n재료 하나하나가 완성된 그림이 되듯,\n치밀하고 야심찬 계획이 실현되는 한 해입니다.',
+    bridge:'이 계획적인 운명처럼,\n하루하루를 단단하게 설계하며\n살아가는 사람들이 있어요.'
+  }
+};
+
+/* 커뮤니티 샘플 메시지 */
+var SAMPLE_MSGS = [
+  {nick:'행복한🌸', time:'방금 전', text:'아기의 첫 돌을 진심으로 축하해요! 세상 모든 사랑을 듬뿍 받으며 건강하게 자라길 바랍니다 💚'},
+  {nick:'따뜻한봄날', time:'1분 전', text:'혼자서도 정말 잘 해내고 계신 양육자님께 응원의 박수를 보냅니다 👏'},
+  {nick:'배민러버♥', time:'2분 전', text:'돌잔치 축하드려요! 맛있는 음식과 함께 행복한 하루 되세요 🍗'},
+  {nick:'초록잎사귀', time:'3분 전', text:'아가야 세상에 나와줘서 고마워요. 엄마(아빠)랑 행복하게 자라렴 🌿'},
+  {nick:'서울하늘', time:'4분 전', text:'한부모 가정을 응원합니다. 배민의 따뜻한 마음이 전달되길 바라요 💛'},
+  {nick:'달빛소나타', time:'5분 전', text:'첫 돌 진심으로 축하해요! 앞으로도 건강하고 밝게 자라주세요 🌙'},
+  {nick:'커피한잔🍵', time:'6분 전', text:'육아 정말 고생 많으셨어요. 이 아이가 분명 큰 행복을 가져다 줄 거예요 ☀️'},
+  {nick:'민들레홀씨', time:'7분 전', text:'세상 어딘가에서 함께 응원하고 있어요! 힘내세요 💪'},
+  {nick:'푸른하늘맑음', time:'8분 전', text:'아기 돌잔치 너무 축하해요! 맛있는 거 많이 먹고 튼튼하게 크세요 🎉'},
+  {nick:'꽃길만걷자', time:'9분 전', text:'한부모 양육자님의 사랑과 용기에 정말 감동받았어요. 응원합니다! 🌺'}
+];
+
+var retryUsed = false;
+var popupOpen = false;
+
+function showIntroModal() {
+  var dim = document.getElementById('dim');
+  var modal = document.getElementById('introModal');
+  dim.className = 'on';
+  modal.classList.remove('show');
+  void modal.offsetWidth;
+  modal.classList.add('show');
+}
+function closeIntroModal() {
+  document.getElementById('introModal').classList.remove('show');
+  document.getElementById('dim').className = '';
+}
+function openDolsang() {
+  document.getElementById('introModal').classList.remove('show');
+  document.getElementById('dim').className = '';
+  var popup = document.getElementById('popup');
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      popup.classList.add('show');
+      popupOpen = true;
+    });
+  });
+}
+function closeSheet() {
+  document.getElementById('popup').classList.remove('show');
+  popupOpen = false;
+}
+function handleDimClick() { closeIntroModal(); }
+
+window.onload = function() {
+  scaleShell();
+  window.addEventListener('resize', scaleShell);
+  setTimeout(showIntroModal, 800);
+  startTimer();
+  buildMsgFeed();
+};
+function scaleShell() {
+  var s = Math.min(window.innerWidth/390, window.innerHeight/844, 1);
+  document.getElementById('shell').style.transform = s < 1 ? 'scale('+s+')' : '';
+}
+
+function goScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  var scr = document.getElementById(id);
+  scr.classList.add('active');
+  scr.scrollTop = 0;
+}
+function goHome() {
+  retryUsed = false;
+  var btn = document.getElementById('retryBtn');
+  btn.disabled = false; btn.style.opacity = '1';
+  document.getElementById('guestMsg').value = '';
+  updateCount();
+  document.querySelectorAll('.foodEmoji').forEach(function(e){ e.classList.remove('pop'); });
+  goScreen('scrDolsang');
+  closeSheet();
+  setTimeout(showIntroModal, 500);
+}
+
+function selectFood(card, foodId) {
+  card.querySelector('.foodEmoji').classList.add('pop');
+  setTimeout(function(){ showResult(foodId); }, 420);
+}
+function showResult(foodId) {
+  var d = FOOD[foodId];
+  document.getElementById('resultEmoji').textContent   = d.emoji;
+  document.getElementById('resultKeyword').textContent = '# ' + d.keyword;
+  document.getElementById('resultTitle').textContent   = d.title;
+  document.getElementById('resultHashtags').innerHTML  = d.hashtags;
+  document.getElementById('resultDesc').textContent    = d.desc;
+  document.getElementById('campBridge').textContent    = d.bridge;
+  goScreen('scrResult');
+}
+function retrySelect() {
+  if (retryUsed) { showToast('다시 뽑기는 1회만 가능합니다.'); return; }
+  retryUsed = true;
+  document.querySelectorAll('.foodEmoji').forEach(function(e){ e.classList.remove('pop'); });
+  var btn = document.getElementById('retryBtn');
+  btn.disabled = true; btn.style.opacity = '0.42';
+  goScreen('scrDolsang');
+}
+
+function updateCount() {
+  document.getElementById('msgCount').textContent = document.getElementById('guestMsg').value.length;
+}
+function submitGuestbook() {
+  var msg = document.getElementById('guestMsg').value.trim();
+  if (msg.length < 10) { showToast('최소 10자 이상 입력해주세요.'); return; }
+  /* 작성한 메시지를 피드 맨 위에 추가 */
+  addMsgToFeed('나 💚', '방금 전', msg);
+  spawnConfetti();
+  setTimeout(function(){ goScreen('scrCoupon'); }, 650);
+}
+function goOrder() {
+  showToast('🛵 배달의민족 홈으로 이동합니다!');
+  setTimeout(closeSheet, 1300);
+}
+
+var toastTmr;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTmr);
+  toastTmr = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+function spawnConfetti() {
+  var wrap = document.getElementById('screenWrap');
+  var cols = ['#FFD600','#0EEED3','#FF3D5A','#00C73C','#FF8F00','#fff'];
+  for (var i=0;i<44;i++) {
+    (function(){
+      var el=document.createElement('div'), sz=5+Math.random()*9;
+      el.style.cssText='position:absolute;width:'+sz+'px;height:'+sz+'px;background:'+cols[Math.floor(Math.random()*cols.length)]+';border-radius:'+(Math.random()>.5?'50%':'2px')+';left:'+(8+Math.random()*84)+'%;top:5%;pointer-events:none;z-index:200;animation:confettiFall '+(1+Math.random()*1.4)+'s ease forwards;animation-delay:'+(Math.random()*.5)+'s;';
+      wrap.appendChild(el);
+      setTimeout(function(){ el.remove(); },2800);
+    })();
+  }
+}
+
+/* ── ★ 4. 커뮤니티 메시지 피드 ── */
+function buildMsgFeed() {
+  var feed = document.getElementById('msgFeed');
+  /* 2세트 복제 → 무한 루프 효과 */
+  var all = SAMPLE_MSGS.concat(SAMPLE_MSGS);
+  all.forEach(function(m){
+    feed.appendChild(makeBubble(m.nick, m.time, m.text));
+  });
+}
+function makeBubble(nick, time, text) {
+  var el = document.createElement('div');
+  el.className = 'msgBubble';
+  el.innerHTML =
+    '<div class="msgBubbleTop">'
+    + '<div class="msgAvatar">'+nick.charAt(0)+'</div>'
+    + '<span class="msgNick">'+nick+'</span>'
+    + '<span class="msgTime">'+time+'</span>'
+    + '</div>'
+    + '<div class="msgText">'+text+'</div>';
+  return el;
+}
+function addMsgToFeed(nick, time, text) {
+  var feed = document.getElementById('msgFeed');
+  var bubble = makeBubble(nick, time, text);
+  bubble.style.border = '1.5px solid #0EEED3';
+  feed.insertBefore(bubble, feed.firstChild);
+}
+
+function startTimer() {
+  var total = 13*60 + 56;
+  setInterval(function(){
+    if(total <= 0) return;
+    total--;
+    var m = Math.floor(total/60), s = total%60;
+    var d = String(m).padStart(2,'0') + String(s).padStart(2,'0');
+    document.getElementById('t1').textContent = d[0];
+    document.getElementById('t2').textContent = d[1];
+    document.getElementById('t3').textContent = d[2];
+    document.getElementById('t4').textContent = d[3];
+  }, 1000);
+}
+</script>
+</body>
+</html>
